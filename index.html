@@ -10,124 +10,188 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root {
-    --ink:    #0f0e0c;
-    --dust:   #f0ebe0;
-    --gravel: #2a2720;
-    --amber:  #e8a020;
-    --rust:   #c04b1a;
-    --mist:   #7a7060;
-    --card:   #1c1a16;
-    --green:  #4ac068;
+    --bg:      #EFE7DB;   /* Endurious Sand        */
+    --orange:  #D96A27;   /* Adventure Orange      */
+    --dark:    #1A1A1A;   /* Deep Anthracite       */
+    --body:    #333333;   /* Body Text Grey        */
+    --offwhite:#FAF9F7;   /* Light Sand / Off-White*/
+    --footer:  #DCD8D2;   /* Neutral Beige         */
+    --section: #2A2A2A;   /* Dark Section          */
+    --copper:  #A88C6E;   /* Copper Accent         */
+    --border:  #D8D0C4;   /* Sand border           */
+    --muted:   #8A7E72;   /* Muted label tone      */
+    --green:   #4a8c5c;   /* Campsite green        */
   }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Barlow', sans-serif; background: var(--ink); color: var(--dust); min-height: 100vh; }
 
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--body); min-height: 100vh; }
+
+  /* ── HEADER ── */
   header {
-    background: var(--gravel); border-bottom: 2px solid var(--amber);
+    background: var(--section);
+    border-bottom: 3px solid var(--orange);
     padding: 0 24px; display: flex; align-items: center; justify-content: space-between;
     height: 60px; position: sticky; top: 0; z-index: 1000;
   }
-  .logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 26px; letter-spacing: 2px; color: var(--amber); text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
-  .logo span { color: var(--dust); font-weight: 400; }
-  .tagline { font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: var(--mist); display: none; }
+  .logo { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 26px; letter-spacing: 2px; color: var(--orange); text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+  .logo span { color: var(--bg); font-weight: 400; }
+  .tagline { font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: var(--copper); display: none; }
   @media(min-width:600px){ .tagline { display: block; } }
 
+  /* ── HERO ── dark section per brand spec */
   .hero {
-    background: linear-gradient(160deg, #1c1a16 0%, #2a2720 60%, #1a1208 100%);
-    padding: 40px 24px 32px; text-align: center; position: relative; overflow: hidden;
+    background: linear-gradient(160deg, var(--dark) 0%, var(--section) 70%, #1f1810 100%);
+    padding: 44px 24px 36px; text-align: center; position: relative; overflow: hidden;
   }
   .hero::before {
     content: ''; position: absolute; inset: 0;
-    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e8a020' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D96A27' fill-opacity='0.07'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     pointer-events: none;
   }
-  .hero h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(32px, 7vw, 64px); text-transform: uppercase; letter-spacing: 3px; line-height: 1; margin-bottom: 8px; position: relative; }
-  .hero h1 em { color: var(--amber); font-style: normal; display: block; }
-  .hero p { color: var(--mist); font-size: 14px; letter-spacing: 1px; margin-bottom: 28px; text-transform: uppercase; }
+  .hero h1 { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: clamp(32px,7vw,64px); text-transform: uppercase; letter-spacing: 3px; line-height: 1; margin-bottom: 8px; position: relative; color: var(--bg); }
+  .hero h1 em { color: var(--orange); font-style: normal; display: block; }
+  .hero > p { color: var(--copper); font-size: 14px; letter-spacing: 1px; margin-bottom: 28px; text-transform: uppercase; }
 
-  .search-wrap { display: flex; max-width: 640px; margin: 0 auto 12px; position: relative; }
-  .search-wrap input { flex: 1; background: var(--dust); color: var(--ink); border: none; padding: 14px 18px; font-family: 'Barlow', sans-serif; font-size: 16px; outline: none; border-radius: 4px 0 0 4px; }
-  .search-wrap input::placeholder { color: var(--mist); }
-  .search-wrap .search-btn { background: var(--amber); color: var(--ink); border: none; padding: 14px 22px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; border-radius: 0 4px 4px 0; transition: background .2s; white-space: nowrap; }
-  .search-wrap .search-btn:hover { background: #f0b030; }
-  .search-wrap .search-btn:disabled { background: var(--mist); cursor: wait; }
+  /* ── SEARCH ── */
+  .search-wrap { display: flex; max-width: 640px; margin: 0 auto 12px; }
+  .search-wrap input {
+    flex: 1; background: var(--offwhite); color: var(--dark);
+    border: 2px solid transparent; border-right: none;
+    padding: 14px 18px; font-family: 'Barlow', sans-serif; font-size: 16px;
+    outline: none; border-radius: 4px 0 0 4px; transition: border-color .2s;
+  }
+  .search-wrap input:focus { border-color: var(--orange); }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-wrap .search-btn {
+    background: var(--orange); color: #fff; border: none;
+    padding: 14px 22px; font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 1px;
+    cursor: pointer; border-radius: 0 4px 4px 0; transition: background .2s; white-space: nowrap;
+  }
+  .search-wrap .search-btn:hover { background: #be5a1e; }
+  .search-wrap .search-btn:disabled { background: var(--muted); cursor: wait; }
 
-  .nearme-row { max-width: 640px; margin: 0 auto 16px; display: flex; justify-content: center; }
-  .nearme-btn { background: transparent; border: 1px solid var(--amber); color: var(--amber); padding: 8px 20px; border-radius: 4px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all .15s; }
-  .nearme-btn:hover { background: var(--amber); color: var(--ink); }
-  .nearme-btn:disabled { border-color: var(--mist); color: var(--mist); cursor: wait; }
+  /* ── NEAR ME ── */
+  .nearme-row { max-width: 640px; margin: 0 auto 14px; display: flex; justify-content: center; }
+  .nearme-btn {
+    background: transparent; border: 1px solid rgba(239,231,219,0.4); color: var(--bg);
+    padding: 8px 20px; border-radius: 4px; font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+    cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all .15s;
+  }
+  .nearme-btn:hover { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .nearme-btn:disabled { opacity: 0.4; cursor: wait; }
 
-  .radius-hero-row { display: flex; align-items: center; gap: 8px; justify-content: center; max-width: 640px; margin: 0 auto 14px; flex-wrap: wrap; }
-  .radius-hero-label { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--mist); }
-  .radius-hero-chip { background: transparent; border: 1px solid #3a3528; color: var(--mist); padding: 6px 16px; border-radius: 3px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all .15s; }
-  .radius-hero-chip:hover { border-color: var(--amber); color: var(--amber); }
-  .radius-hero-chip.active { background: var(--amber); border-color: var(--amber); color: var(--ink); }
+  /* ── RADIUS SELECTOR ── */
+  .radius-hero-row { display: flex; align-items: center; gap: 8px; justify-content: center; max-width: 640px; margin: 0 auto 18px; flex-wrap: wrap; }
+  .radius-hero-label { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--copper); }
+  .radius-hero-chip {
+    background: transparent; border: 1px solid rgba(168,140,110,0.5); color: var(--copper);
+    padding: 6px 16px; border-radius: 3px; font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+    cursor: pointer; transition: all .15s;
+  }
+  .radius-hero-chip:hover { border-color: var(--orange); color: var(--orange); }
+  .radius-hero-chip.active { background: var(--orange); border-color: var(--orange); color: #fff; }
 
+  /* ── FILTER CHIPS ── */
   .filter-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 640px; margin: 0 auto; }
-  .chip { background: transparent; border: 1px solid var(--mist); color: var(--mist); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all .15s; }
-  .chip:hover, .chip.active { background: var(--amber); border-color: var(--amber); color: var(--ink); }
+  .chip {
+    background: transparent; border: 1px solid rgba(239,231,219,0.3);
+    color: rgba(239,231,219,0.75); padding: 6px 14px; border-radius: 20px;
+    font-size: 12px; font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+    cursor: pointer; transition: all .15s;
+  }
+  .chip:hover { border-color: var(--orange); color: var(--orange); }
+  .chip.active { background: var(--orange); border-color: var(--orange); color: #fff; }
 
-  .main { display: grid; grid-template-columns: 1fr; min-height: calc(100vh - 60px - 260px); }
-  @media(min-width: 900px) { .main { grid-template-columns: 420px 1fr; height: calc(100vh - 60px - 260px); } }
+  /* ── MAIN LAYOUT ── */
+  .main { display: grid; grid-template-columns: 1fr; min-height: calc(100vh - 60px - 280px); }
+  @media(min-width:900px) { .main { grid-template-columns: 420px 1fr; height: calc(100vh - 60px - 280px); } }
 
-  .list-panel { background: var(--ink); overflow-y: auto; border-right: 1px solid #2a2720; }
-  .panel-header { padding: 16px 20px 12px; border-bottom: 1px solid var(--gravel); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--ink); z-index: 10; }
-  .panel-header h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: var(--mist); }
-  .result-count { font-size: 12px; color: var(--amber); font-weight: 600; }
+  /* ── LIST PANEL ── */
+  .list-panel { background: var(--offwhite); overflow-y: auto; border-right: 1px solid var(--border); }
+  .panel-header {
+    padding: 14px 20px 12px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; background: var(--offwhite); z-index: 10;
+  }
+  .panel-header h2 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); }
+  .result-count { font-size: 12px; color: var(--orange); font-weight: 700; }
+  #radiusBar { display: none; }
 
-  /* Radius bar */
-  #radiusBar { display: none; align-items: center; gap: 6px; padding: 10px 20px; background: #141210; border-bottom: 1px solid var(--gravel); flex-wrap: wrap; }
-  .radius-label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--mist); margin-right: 4px; }
-  .radius-chip { background: var(--gravel); border: 1px solid #3a3528; color: var(--mist); padding: 4px 12px; border-radius: 3px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all .15s; }
-  .radius-chip:hover { border-color: var(--amber); color: var(--amber); }
-  .radius-chip.active { background: var(--amber); border-color: var(--amber); color: var(--ink); }
+  /* ── CAMP CARD ── */
+  .camp-card { padding: 16px 20px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background .15s; background: var(--offwhite); }
+  .camp-card:hover { background: var(--bg); }
+  .camp-card.selected { background: #F0E4D4; border-left: 3px solid var(--orange); }
 
-  /* Camp card */
-  .camp-card { padding: 16px 20px; border-bottom: 1px solid #1c1a16; cursor: pointer; transition: background .15s; }
-  .camp-card:hover { background: #1a1810; }
-  .camp-card.selected { background: #201e18; border-left: 3px solid var(--amber); }
-  .camp-type-badge { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; padding: 2px 8px; border-radius: 2px; display: inline-block; margin-bottom: 8px; }
-  .camp-type-badge.campsite { background: #1a3a20; color: #4ac068; }
-  .camp-type-badge.wild { background: #2a1a0a; color: #e8a020; }
-  .camp-type-badge.unknown { background: #1a1a2a; color: #8888cc; }
-  .camp-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 19px; line-height: 1.1; margin-bottom: 4px; }
-  .camp-location { font-size: 12px; color: var(--mist); margin-bottom: 8px; }
+  .camp-type-badge {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 2px; padding: 2px 8px;
+    border-radius: 2px; display: inline-block; margin-bottom: 8px;
+  }
+  .camp-type-badge.campsite { background: #d4ebd9; color: #2a6336; }
+  .camp-type-badge.wild     { background: #f5e0cc; color: #9a3e10; }
+  .camp-type-badge.unknown  { background: #e5e5f0; color: #555599; }
+  .camp-type-badge.motobadge{ background: #f0e8df; color: var(--copper); }
+
+  .camp-name { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 19px; line-height: 1.1; margin-bottom: 4px; color: var(--dark); }
+  .camp-location { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
   .camp-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
-  .tag { background: var(--gravel); color: var(--mist); font-size: 10px; padding: 2px 7px; border-radius: 2px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: .5px; font-weight: 600; }
-  .camp-summary { font-size: 13px; color: #a09880; line-height: 1.5; }
-  .camp-dist { font-size: 11px; color: var(--amber); font-weight: 600; margin-bottom: 4px; }
+  .tag { background: var(--bg); color: var(--copper); font-size: 10px; padding: 2px 8px; border-radius: 2px; border: 1px solid var(--border); font-family: 'Barlow Condensed', sans-serif; letter-spacing: .5px; font-weight: 600; }
+  .camp-summary { font-size: 13px; color: var(--body); line-height: 1.5; }
+  .camp-dist { font-size: 11px; color: var(--orange); font-weight: 700; margin-bottom: 4px; }
 
-  #map { height: 400px; background: #1a1810; }
+  /* ── MAP ── */
+  #map { height: 400px; background: var(--bg); }
   @media(min-width:900px) { #map { height: 100%; } }
 
+  /* ── STATES ── */
   .state-box { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 30px; text-align: center; gap: 12px; }
   .state-icon { font-size: 48px; }
-  .state-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; }
-  .state-sub { font-size: 13px; color: var(--mist); max-width: 280px; line-height: 1.5; }
-  .spinner { width: 32px; height: 32px; border: 3px solid var(--gravel); border-top-color: var(--amber); border-radius: 50%; animation: spin .8s linear infinite; }
+  .state-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; color: var(--dark); }
+  .state-sub { font-size: 13px; color: var(--muted); max-width: 280px; line-height: 1.5; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--orange); border-radius: 50%; animation: spin .8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  footer { background: var(--gravel); border-top: 1px solid #3a3528; padding: 16px 24px; text-align: center; font-size: 11px; color: var(--mist); letter-spacing: 1px; }
+  /* ── FOOTER ── */
+  footer { background: var(--footer); border-top: 1px solid var(--border); padding: 16px 24px; text-align: center; font-size: 11px; color: var(--muted); letter-spacing: 1px; }
 
-  /* Detail overlay */
-  .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 2000; align-items: flex-end; justify-content: center; }
+  /* ── DETAIL OVERLAY ── */
+  .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(26,26,26,.55); z-index: 2000; align-items: flex-end; justify-content: center; }
   @media(min-width:600px) { .detail-overlay { align-items: center; } }
   .detail-overlay.open { display: flex; }
-  .detail-box { background: var(--card); border: 1px solid var(--gravel); border-radius: 8px 8px 0 0; padding: 24px; max-width: 560px; width: 100%; max-height: 85vh; overflow-y: auto; position: relative; }
+  .detail-box {
+    background: var(--offwhite); border: 1px solid var(--border);
+    border-radius: 8px 8px 0 0; padding: 24px;
+    max-width: 560px; width: 100%; max-height: 85vh; overflow-y: auto; position: relative;
+  }
   @media(min-width:600px) { .detail-box { border-radius: 8px; } }
-  .detail-close { position: absolute; top: 16px; right: 16px; background: var(--gravel); border: none; color: var(--dust); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
-  .detail-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 28px; line-height: 1; margin-bottom: 8px; padding-right: 40px; }
-  .detail-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--gravel); }
-  .detail-section h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--amber); margin-bottom: 8px; }
-  .detail-section p { font-size: 14px; line-height: 1.6; color: #c0b8a8; }
+  .detail-close {
+    position: absolute; top: 16px; right: 16px;
+    background: var(--bg); border: 1px solid var(--border); color: var(--dark);
+    width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+    font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background .15s;
+  }
+  .detail-close:hover { background: var(--border); }
+  .detail-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 28px; line-height: 1; margin-bottom: 8px; padding-right: 40px; color: var(--dark); }
+  .detail-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .detail-section h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--orange); margin-bottom: 8px; }
+  .detail-section p { font-size: 14px; line-height: 1.6; color: var(--body); }
   .detail-tips { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-  .detail-tips li { font-size: 13px; color: #c0b8a8; padding-left: 16px; position: relative; line-height: 1.4; }
-  .detail-tips li::before { content: '▸'; position: absolute; left: 0; color: var(--amber); }
-  .osm-link { display: inline-block; margin-top: 8px; color: var(--amber); font-size: 12px; text-decoration: none; border: 1px solid var(--amber); padding: 4px 10px; border-radius: 3px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-  .osm-link:hover { background: var(--amber); color: var(--ink); }
-  .attr-row { display: flex; flex-direction: column; gap: 4px; }
-  .attr-item { display: flex; gap: 8px; font-size: 13px; color: #c0b8a8; }
-  .attr-key { color: var(--mist); min-width: 100px; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; padding-top: 2px; }
+  .detail-tips li { font-size: 13px; color: var(--body); padding-left: 16px; position: relative; line-height: 1.4; }
+  .detail-tips li::before { content: '▸'; position: absolute; left: 0; color: var(--orange); }
+  .osm-link {
+    display: inline-block; margin-top: 8px; color: var(--orange); font-size: 12px;
+    text-decoration: none; border: 1px solid var(--orange); padding: 4px 10px;
+    border-radius: 3px; font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; letter-spacing: 1px; text-transform: uppercase; transition: all .15s;
+  }
+  .osm-link:hover { background: var(--orange); color: #fff; }
+  .attr-row { display: flex; flex-direction: column; gap: 5px; }
+  .attr-item { display: flex; gap: 8px; font-size: 13px; color: var(--body); }
+  .attr-key { color: var(--copper); min-width: 110px; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; padding-top: 2px; }
 </style>
 </head>
 <body>
@@ -140,10 +204,12 @@
 <div class="hero">
   <h1>Find Your <em>Basecamp</em></h1>
   <p>On &amp; offroad · Campsites &amp; wild spots · Built for allroad riders</p>
+
   <div class="search-wrap">
     <input type="text" id="searchInput" placeholder="City, region or country… e.g. Ardennes, Norway, Pyrenees" autocomplete="off">
     <button class="search-btn" id="searchBtn" onclick="doTextSearch()">Find Camps</button>
   </div>
+
   <div class="nearme-row">
     <button class="nearme-btn" id="nearmeBtn" onclick="doNearMe()">
       <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
@@ -159,10 +225,10 @@
   </div>
 
   <div class="filter-row">
-    <button class="chip active" data-filter="all" onclick="setFilter(this,'all')">All spots</button>
-    <button class="chip" data-filter="campsite" onclick="setFilter(this,'campsite')">Campsites</button>
-    <button class="chip" data-filter="wild" onclick="setFilter(this,'wild')">Wild camping</button>
-    <button class="chip" data-filter="moto" onclick="setFilter(this,'moto')">Moto-friendly</button>
+    <button class="chip active" data-filter="all"      onclick="setFilter(this,'all')">All spots</button>
+    <button class="chip"        data-filter="campsite" onclick="setFilter(this,'campsite')">Campsites</button>
+    <button class="chip"        data-filter="wild"     onclick="setFilter(this,'wild')">Wild camping</button>
+    <button class="chip"        data-filter="moto"     onclick="setFilter(this,'moto')">Moto-friendly</button>
   </div>
 </div>
 
@@ -177,7 +243,7 @@
       <div class="state-box">
         <div class="state-icon">🗺️</div>
         <div class="state-title">Search a region</div>
-        <div class="state-sub">Enter a city, region or country name — or tap "Find camps near me" to start from your position.</div>
+        <div class="state-sub">Enter a city, region or country — or tap "Find camps near me" to start from your position.</div>
       </div>
     </div>
   </div>
@@ -191,7 +257,7 @@
   </div>
 </div>
 
-<footer>MOTOBASE &nbsp;·&nbsp; For allroad riders · Powered by OpenStreetMap &amp; Nominatim · Always verify before riding out</footer>
+<footer>MOTOBASE &nbsp;·&nbsp; For allroad riders &nbsp;·&nbsp; Powered by OpenStreetMap &amp; Nominatim &nbsp;·&nbsp; Always verify before riding out</footer>
 
 <script>
 /* ── State ── */
@@ -201,14 +267,12 @@ let markers = [], radiusCircle = null;
 let userLat = null, userLng = null, currentRadius = 25;
 let youAreHereMarker = null;
 
-/* ── Map ── */
+/* ── Map — use light tile for brand feel ── */
 const motoMap = L.map('map', { zoomControl: true }).setView([52, 10], 4);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
   attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a> © <a href="https://carto.com">CartoDB</a>',
   subdomains: 'abcd', maxZoom: 19
 }).addTo(motoMap);
-
-
 
 /* ── Radius selector ── */
 function setRadius(el, km) {
@@ -226,28 +290,25 @@ function setFilter(el, f) {
 }
 
 function filteredCamps() {
-  if (currentFilter === 'all') return allCamps;
+  if (currentFilter === 'all')      return allCamps;
   if (currentFilter === 'campsite') return allCamps.filter(c => c.type === 'campsite');
-  if (currentFilter === 'wild') return allCamps.filter(c => c.type === 'wild');
-  if (currentFilter === 'moto') return allCamps.filter(c => c.motoFriendly);
+  if (currentFilter === 'wild')     return allCamps.filter(c => c.type === 'wild');
+  if (currentFilter === 'moto')     return allCamps.filter(c => c.motoFriendly);
   return allCamps;
 }
 
-/* ── Geocode place name → lat/lng via Nominatim ── */
+/* ── Geocode via Nominatim ── */
 async function geocode(query) {
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
   const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
   const data = await res.json();
   if (!data.length) return null;
-  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), display: data[0].display_name };
+  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
 }
 
-/* ── Overpass query ── */
+/* ── Overpass API ── */
 function buildOverpassQuery(lat, lng, radiusM) {
-  // Fetch tourism=camp_site, tourism=caravan_site, leisure=nature_reserve tagged as camping,
-  // and access=yes campsites — cast wide net
-  return `
-[out:json][timeout:25];
+  return `[out:json][timeout:25];
 (
   node["tourism"="camp_site"](around:${radiusM},${lat},${lng});
   way["tourism"="camp_site"](around:${radiusM},${lat},${lng});
@@ -257,80 +318,63 @@ function buildOverpassQuery(lat, lng, radiusM) {
   node["tourism"="wilderness_hut"](around:${radiusM},${lat},${lng});
   node["amenity"="camping"](around:${radiusM},${lat},${lng});
 );
-out center tags;
-`;
+out center tags;`;
 }
 
 async function fetchOverpass(lat, lng, radiusKm) {
-  const radiusM = radiusKm * 1000;
-  const query = buildOverpassQuery(lat, lng, radiusM);
   const res = await fetch('https://overpass-api.de/api/interpreter', {
     method: 'POST',
-    body: 'data=' + encodeURIComponent(query)
+    body: 'data=' + encodeURIComponent(buildOverpassQuery(lat, lng, radiusKm * 1000))
   });
   const data = await res.json();
   return data.elements || [];
 }
 
-/* ── Parse OSM element into camp object ── */
-function parseElement(el, userLat, userLng) {
+/* ── Parse OSM element ── */
+function parseElement(el, uLat, uLng) {
   const tags = el.tags || {};
   const lat = el.lat || (el.center && el.center.lat);
   const lng = el.lon || (el.center && el.center.lon);
   if (!lat || !lng) return null;
 
-  const name = tags.name || tags['name:en'] || 'Unnamed camp';
+  const name    = tags.name || tags['name:en'] || 'Unnamed camp';
   const tourism = tags.tourism || tags.amenity || '';
   const backcountry = tags.backcountry === 'yes' || tags.wilderness === 'yes' || tourism === 'wilderness_hut';
-  const type = backcountry ? 'wild' : (tourism === 'caravan_site' ? 'campsite' : 'campsite');
+  const type    = backcountry ? 'wild' : 'campsite';
 
-  // Moto-friendly signals
   const motoFriendly = !!(
-    tags.motorcycle === 'yes' ||
-    tags['access:motorcycle'] === 'yes' ||
+    tags.motorcycle === 'yes' || tags['access:motorcycle'] === 'yes' ||
     tags.motorcar === 'yes' ||
     (tags.surface && ['asphalt','gravel','compacted','dirt'].includes(tags.surface)) ||
     tags.access === 'yes'
   );
 
-  // Build tags list from OSM data
   const tagList = [];
-  if (tags.sanitary_dump_station === 'yes') tagList.push('Dump station');
-  if (tags.shower === 'yes' || tags['shower'] === 'yes') tagList.push('Showers');
-  if (tags.drinking_water === 'yes') tagList.push('Drinking water');
-  if (tags.electricity === 'yes') tagList.push('Electric hookup');
-  if (tags.fee === 'no') tagList.push('Free');
-  if (tags.fee === 'yes') tagList.push('Paid');
-  if (tags.dogs === 'yes') tagList.push('Dogs ok');
-  if (tags.tents === 'yes') tagList.push('Tents ok');
-  if (tags.surface) tagList.push(cap(tags.surface) + ' access');
-  if (tags.motorcycle === 'yes') tagList.push('Moto welcome');
-  if (tags.opening_hours) tagList.push(tags.opening_hours.length < 20 ? tags.opening_hours : 'Seasonal');
+  if (tags.shower === 'yes')          tagList.push('Showers');
+  if (tags.drinking_water === 'yes')  tagList.push('Drinking water');
+  if (tags.electricity === 'yes')     tagList.push('Electric hookup');
+  if (tags.fee === 'no')              tagList.push('Free');
+  if (tags.fee === 'yes')             tagList.push('Paid');
+  if (tags.dogs === 'yes')            tagList.push('Dogs ok');
+  if (tags.tents === 'yes')           tagList.push('Tents ok');
+  if (tags.surface)                   tagList.push(cap(tags.surface) + ' access');
+  if (tags.motorcycle === 'yes')      tagList.push('Moto welcome');
+  if (tags.opening_hours && tags.opening_hours.length < 20) tagList.push(tags.opening_hours);
 
-  // Distance
-  let distKm = null;
-  if (userLat != null) {
-    distKm = haversine(userLat, userLng, lat, lng);
-  }
+  const distKm = uLat != null ? haversine(uLat, uLng, lat, lng) : null;
 
   return {
     id: `${el.type}-${el.id}`,
-    osmId: el.id,
-    osmType: el.type,
-    name,
-    type,
-    lat, lng,
-    motoFriendly,
+    name, type, lat, lng, motoFriendly,
     tags: tagList.slice(0, 5),
-    website: tags.website || tags['contact:website'] || null,
-    phone: tags.phone || tags['contact:phone'] || null,
-    email: tags.email || tags['contact:email'] || null,
+    website:      tags.website || tags['contact:website'] || null,
+    phone:        tags.phone   || tags['contact:phone']   || null,
+    email:        tags.email   || tags['contact:email']   || null,
     openingHours: tags.opening_hours || null,
-    operator: tags.operator || null,
-    capacity: tags.capacity || tags['capacity:tents'] || null,
-    fee: tags.fee || null,
-    surface: tags.surface || null,
-    access: tags.access || null,
+    operator:     tags.operator      || null,
+    capacity:     tags.capacity      || tags['capacity:tents'] || null,
+    fee:          tags.fee           || null,
+    surface:      tags.surface       || null,
     distKm,
     osmUrl: `https://www.openstreetmap.org/${el.type}/${el.id}`
   };
@@ -339,10 +383,8 @@ function parseElement(el, userLat, userLng) {
 function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
 function haversine(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+  const R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
@@ -351,29 +393,22 @@ async function doTextSearch() {
   const q = document.getElementById('searchInput').value.trim();
   if (!q) return;
   userLat = null; userLng = null;
-  hideRadiusBar();
   setLoading(true, `Searching for "${q}"…`);
 
   const geo = await geocode(q);
-  if (!geo) {
-    showError(`Could not find "${q}". Try a different place name.`);
-    setLoading(false);
-    return;
-  }
+  if (!geo) { showError(`Could not find "${q}". Try a different place name.`); setLoading(false); return; }
 
-  // Use the selected radius around the geocoded point
   motoMap.setView([geo.lat, geo.lng], 10);
-  const elements = await fetchOverpass(geo.lat, geo.lng, currentRadius);
-  allCamps = elements.map(el => parseElement(el, null, null)).filter(Boolean);
-  allCamps.sort((a,b) => a.name.localeCompare(b.name));
-
-  // Draw radius circle for context
   if (radiusCircle) radiusCircle.remove();
   radiusCircle = L.circle([geo.lat, geo.lng], {
     radius: currentRadius * 1000,
-    color: '#e8a020', weight: 1, opacity: 0.4,
-    fill: true, fillColor: '#e8a020', fillOpacity: 0.04
+    color: '#D96A27', weight: 1.5, opacity: 0.5,
+    fill: true, fillColor: '#D96A27', fillOpacity: 0.06
   }).addTo(motoMap);
+
+  const elements = await fetchOverpass(geo.lat, geo.lng, currentRadius);
+  allCamps = elements.map(el => parseElement(el, null, null)).filter(Boolean);
+  allCamps.sort((a,b) => a.name.localeCompare(b.name));
 
   document.getElementById('panelTitle').textContent = q;
   renderAll([geo.lat, geo.lng], false);
@@ -391,8 +426,7 @@ function doNearMe() {
     pos => {
       btn.disabled = false;
       btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg> Find camps near me`;
-      userLat = pos.coords.latitude;
-      userLng = pos.coords.longitude;
+      userLat = pos.coords.latitude; userLng = pos.coords.longitude;
       document.getElementById('searchInput').value = '';
       document.getElementById('panelTitle').textContent = 'Near me';
       doRadiusSearch(currentRadius);
@@ -410,60 +444,51 @@ async function doRadiusSearch(km) {
   currentRadius = km;
   setLoading(true, `Searching within ${km} km…`);
 
-  // Place "you are here" marker
   if (youAreHereMarker) youAreHereMarker.remove();
   youAreHereMarker = L.circleMarker([userLat, userLng], {
-    radius: 9, color: '#fff', fillColor: '#e8a020', fillOpacity: 1, weight: 2
-  }).addTo(motoMap).bindTooltip('You are here', { permanent: false });
+    radius: 9, color: '#fff', fillColor: '#D96A27', fillOpacity: 1, weight: 2
+  }).addTo(motoMap).bindTooltip('You are here');
 
-  // Zoom to fit radius
-  const zoomForRadius = { 30: 11, 50: 10, 100: 9, 200: 8 };
-  motoMap.setView([userLat, userLng], zoomForRadius[km] || 10);
+  const zoomLevels = { 10: 12, 25: 11, 50: 10 };
+  motoMap.setView([userLat, userLng], zoomLevels[km] || 10);
 
-  // Draw radius circle
   if (radiusCircle) radiusCircle.remove();
   radiusCircle = L.circle([userLat, userLng], {
     radius: km * 1000,
-    color: '#e8a020', weight: 1, opacity: 0.4,
-    fill: true, fillColor: '#e8a020', fillOpacity: 0.04
+    color: '#D96A27', weight: 1.5, opacity: 0.5,
+    fill: true, fillColor: '#D96A27', fillOpacity: 0.06
   }).addTo(motoMap);
 
   const elements = await fetchOverpass(userLat, userLng, km);
   allCamps = elements.map(el => parseElement(el, userLat, userLng)).filter(Boolean);
-  allCamps.sort((a, b) => (a.distKm || 0) - (b.distKm || 0));
+  allCamps.sort((a,b) => (a.distKm||0) - (b.distKm||0));
 
   renderAll(null, true);
   setLoading(false);
 }
 
-function expandRadius(km) { doRadiusSearch(km); }
-
 /* ── Render ── */
-function renderAll(center, keepView) {
-  renderList();
-  renderMarkers(center, keepView);
-}
+function renderAll(center, keepView) { renderList(); renderMarkers(center, keepView); }
 
 function renderList() {
   const camps = filteredCamps();
   document.getElementById('resultCount').textContent = `${camps.length} found`;
   const el = document.getElementById('listContent');
 
-  if (camps.length === 0) {
+  if (!camps.length) {
     el.innerHTML = `<div class="state-box">
       <div class="state-icon">🏕️</div>
       <div class="state-title">No camps found</div>
-      <div class="state-sub">Try a different area, zoom out with a wider radius, or adjust the filter.</div>
+      <div class="state-sub">Try a wider radius or a different area.</div>
     </div>`;
     return;
   }
 
   el.innerHTML = camps.map(c => {
-    const typeLabel = c.type === 'wild' ? '🌿 Wild' : '⛺ Campsite';
     const distLabel = c.distKm != null ? `<div class="camp-dist">📍 ${c.distKm.toFixed(1)} km away</div>` : '';
     return `<div class="camp-card" id="card-${c.id}" onclick="selectCamp('${c.id}')">
-      <span class="camp-type-badge ${c.type}">${typeLabel}</span>
-      ${c.motoFriendly ? '<span class="camp-type-badge" style="background:#1a1a2a;color:#8888ff;margin-left:4px">🏍 Moto</span>' : ''}
+      <span class="camp-type-badge ${c.type}">${c.type === 'wild' ? '🌿 Wild' : '⛺ Campsite'}</span>
+      ${c.motoFriendly ? '<span class="camp-type-badge motobadge" style="margin-left:4px">🏍 Moto</span>' : ''}
       <div class="camp-name">${c.name}</div>
       ${distLabel}
       <div class="camp-tags">${c.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
@@ -475,16 +500,15 @@ function renderList() {
 function renderMarkers(center, keepView) {
   markers.forEach(m => m.remove());
   markers = [];
-
   const camps = allCamps;
   if (!camps.length) return;
 
   camps.forEach(c => {
     const isWild = c.type === 'wild';
-    const color = isWild ? '#e8a020' : '#4ac068';
-    const icon = L.divIcon({
+    const color  = isWild ? '#D96A27' : '#4a8c5c';
+    const icon   = L.divIcon({
       className: '',
-      html: `<div style="background:${color};border:2px solid #fff;border-radius:${isWild ? '3px' : '50%'};width:13px;height:13px;box-shadow:0 2px 6px rgba(0,0,0,.5)"></div>`,
+      html: `<div style="background:${color};border:2px solid #fff;border-radius:${isWild?'3px':'50%'};width:13px;height:13px;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div>`,
       iconSize: [13,13], iconAnchor: [6,6]
     });
     const m = L.marker([c.lat, c.lng], { icon })
@@ -496,44 +520,38 @@ function renderMarkers(center, keepView) {
 
   if (center && !keepView) motoMap.setView(center, 10);
   else if (!keepView && camps.length) {
-    const bounds = L.latLngBounds(camps.map(c => [c.lat, c.lng]));
-    motoMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 12 });
+    motoMap.fitBounds(L.latLngBounds(camps.map(c => [c.lat, c.lng])), { padding: [30,30], maxZoom: 12 });
   }
 }
 
 /* ── Detail ── */
 function openDetail(camp) {
   const rows = [
-    camp.operator    ? ['Operator',  camp.operator] : null,
-    camp.capacity    ? ['Capacity',  camp.capacity + ' pitches'] : null,
-    camp.fee === 'yes' ? ['Fee', 'Paid'] : camp.fee === 'no' ? ['Fee', 'Free'] : null,
-    camp.openingHours? ['Hours',     camp.openingHours] : null,
-    camp.surface     ? ['Surface',   cap(camp.surface)] : null,
-    camp.phone       ? ['Phone',     camp.phone] : null,
-    camp.email       ? ['Email',     camp.email] : null,
+    camp.operator    ? ['Operator', camp.operator] : null,
+    camp.capacity    ? ['Capacity', camp.capacity + ' pitches'] : null,
+    camp.fee === 'yes' ? ['Fee','Paid'] : camp.fee === 'no' ? ['Fee','Free'] : null,
+    camp.openingHours? ['Hours',   camp.openingHours] : null,
+    camp.surface     ? ['Surface', cap(camp.surface)] : null,
+    camp.phone       ? ['Phone',   camp.phone] : null,
+    camp.email       ? ['Email',   camp.email] : null,
   ].filter(Boolean);
 
   document.getElementById('detailContent').innerHTML = `
-    <span class="camp-type-badge ${camp.type}" style="margin-bottom:12px">${camp.type === 'wild' ? '🌿 Wild camping' : '⛺ Campsite'}</span>
-    ${camp.motoFriendly ? '<span class="camp-type-badge" style="background:#1a1a2a;color:#8888ff;margin-left:4px">🏍 Moto-friendly</span>' : ''}
+    <span class="camp-type-badge ${camp.type}">${camp.type==='wild'?'🌿 Wild camping':'⛺ Campsite'}</span>
+    ${camp.motoFriendly ? '<span class="camp-type-badge motobadge" style="margin-left:4px">🏍 Moto-friendly</span>' : ''}
     <div class="detail-title" style="margin-top:12px">${camp.name}</div>
-    ${camp.distKm != null ? `<div class="camp-dist" style="margin-bottom:8px">📍 ${camp.distKm.toFixed(1)} km from your position</div>` : ''}
-    <div class="camp-tags" style="margin-bottom:4px">${camp.tags.map(t => `<span class="tag">${t}</span>`).join('') || '<span style="color:var(--mist);font-size:12px">No extra details in OSM</span>'}</div>
+    ${camp.distKm!=null ? `<div class="camp-dist" style="margin-bottom:8px">📍 ${camp.distKm.toFixed(1)} km from your position</div>` : ''}
+    <div class="camp-tags" style="margin-bottom:4px">${camp.tags.map(t=>`<span class="tag">${t}</span>`).join('') || `<span style="color:var(--muted);font-size:12px">No extra details in OSM</span>`}</div>
 
-    ${rows.length ? `<div class="detail-section">
-      <h3>Details</h3>
-      <div class="attr-row">
-        ${rows.map(([k,v]) => `<div class="attr-item"><span class="attr-key">${k}</span><span>${v}</span></div>`).join('')}
-      </div>
-    </div>` : ''}
+    ${rows.length ? `<div class="detail-section"><h3>Details</h3><div class="attr-row">
+      ${rows.map(([k,v])=>`<div class="attr-item"><span class="attr-key">${k}</span><span>${v}</span></div>`).join('')}
+    </div></div>` : ''}
 
-    ${camp.website ? `<div class="detail-section">
-      <h3>Website</h3>
+    ${camp.website ? `<div class="detail-section"><h3>Website</h3>
       <a href="${camp.website}" target="_blank" rel="noopener" class="osm-link">Open website ↗</a>
     </div>` : ''}
 
-    <div class="detail-section">
-      <h3>Tips for allroad riders</h3>
+    <div class="detail-section"><h3>Tips for allroad riders</h3>
       <ul class="detail-tips">
         <li>Check access road surface before committing — especially on a loaded bike.</li>
         <li>Confirm opening season and reservation requirements ahead of time.</li>
@@ -541,9 +559,8 @@ function openDetail(camp) {
       </ul>
     </div>
 
-    <div class="detail-section">
-      <h3>OpenStreetMap</h3>
-      <p style="font-size:12px;color:var(--mist);margin-bottom:8px">Data sourced from OSM. Know more about this spot? Edit it directly.</p>
+    <div class="detail-section"><h3>OpenStreetMap</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Data from OSM — know more about this spot? Help improve it.</p>
       <a href="${camp.osmUrl}" target="_blank" rel="noopener" class="osm-link">View on OSM ↗</a>
     </div>
   `;
@@ -556,16 +573,14 @@ function selectCamp(id) {
   if (selectedId) { const p = document.getElementById(`card-${selectedId}`); if (p) p.classList.remove('selected'); }
   selectedId = id;
   const card = document.getElementById(`card-${id}`);
-  if (card) { card.classList.add('selected'); card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  if (card) { card.classList.add('selected'); card.scrollIntoView({ behavior:'smooth', block:'nearest' }); }
   const camp = allCamps.find(c => c.id === id);
   if (camp) { motoMap.flyTo([camp.lat, camp.lng], 14, { duration: 1 }); openDetail(camp); }
 }
 
 function closeDetailOutside(e) { if (e.target === document.getElementById('detailOverlay')) closeDetail(); }
 function closeDetail() { document.getElementById('detailOverlay').classList.remove('open'); }
-
-/* ── (radius selector is now in the hero, no panel bar needed) ── */
-function hideRadiusBar() {} // kept for compat
+function hideRadiusBar() {}
 
 /* ── UI states ── */
 function setLoading(on, msg) {
@@ -591,7 +606,7 @@ function showError(msg) {
     </div>`;
 }
 
-document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doTextSearch(); });
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key==='Enter') doTextSearch(); });
 </script>
 </body>
 </html>
