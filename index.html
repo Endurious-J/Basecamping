@@ -308,15 +308,31 @@ async function geocode(query) {
 
 /* ── Overpass API ── */
 function buildOverpassQuery(lat, lng, radiusM) {
-  return `[out:json][timeout:25];
+  const A = `(around:${radiusM},${lat},${lng})`;
+  return `[out:json][timeout:35];
 (
-  node["tourism"="camp_site"](around:${radiusM},${lat},${lng});
-  way["tourism"="camp_site"](around:${radiusM},${lat},${lng});
-  node["tourism"="caravan_site"](around:${radiusM},${lat},${lng});
-  way["tourism"="caravan_site"](around:${radiusM},${lat},${lng});
-  node["leisure"="picnic_site"]["camping"="yes"](around:${radiusM},${lat},${lng});
-  node["tourism"="wilderness_hut"](around:${radiusM},${lat},${lng});
-  node["amenity"="camping"](around:${radiusM},${lat},${lng});
+  node["tourism"="camp_site"]${A};
+  way["tourism"="camp_site"]${A};
+  node["tourism"="caravan_site"]${A};
+  way["tourism"="caravan_site"]${A};
+  node["amenity"="camping"]${A};
+  node["tourism"="camp_site"]["backcountry"="yes"]${A};
+  way["tourism"="camp_site"]["backcountry"="yes"]${A};
+  node["tourism"="camp_site"]["wilderness"="yes"]${A};
+  node["tourism"="camp_site"]["informal"="yes"]${A};
+  node["camping"="wild"]${A};
+  node["camping"="bivouac"]${A};
+  way["camping"="wild"]${A};
+  way["camping"="bivouac"]${A};
+  node["tourism"="wilderness_hut"]${A};
+  way["tourism"="wilderness_hut"]${A};
+  node["amenity"="shelter"]["shelter_type"="lean_to"]${A};
+  node["amenity"="shelter"]["shelter_type"="basic_hut"]${A};
+  node["amenity"="shelter"]["camping"="yes"]${A};
+  node["tourism"="lean_to"]${A};
+  node["leisure"="picnic_site"]["camping"="yes"]${A};
+  node["overnight"="yes"]${A};
+  node["bivouac"="yes"]${A};
 );
 out center tags;`;
 }
@@ -337,10 +353,38 @@ function parseElement(el, uLat, uLng) {
   const lng = el.lon || (el.center && el.center.lon);
   if (!lat || !lng) return null;
 
-  const name    = tags.name || tags['name:en'] || 'Unnamed camp';
-  const tourism = tags.tourism || tags.amenity || '';
-  const backcountry = tags.backcountry === 'yes' || tags.wilderness === 'yes' || tourism === 'wilderness_hut';
-  const type    = backcountry ? 'wild' : 'campsite';
+  const name    = tags.name || tags['name:en'] || 'Unnamed spot';
+  const tourism = tags.tourism || tags.amenity || tags.leisure || '';
+  const amenity = tags.amenity || '';
+
+  // Classify as wild if any wild-camping signal is present
+  const isWild = (
+    tags.backcountry === 'yes' ||
+    tags.wilderness  === 'yes' ||
+    tags.informal    === 'yes' ||
+    tags.camping     === 'wild' ||
+    tags.camping     === 'bivouac' ||
+    tags.bivouac     === 'yes' ||
+    tags.overnight   === 'yes' ||
+    tourism === 'wilderness_hut' ||
+    tourism === 'lean_to' ||
+    (amenity === 'shelter' && ['lean_to','basic_hut'].includes(tags.shelter_type)) ||
+    (amenity === 'shelter' && tags.camping === 'yes') ||
+    // camp_site with no operator and access=yes is likely informal
+    (tourism === 'camp_site' && !tags.operator && tags.access === 'yes' && !tags.fee)
+  );
+  const type = isWild ? 'wild' : 'campsite';
+
+  // Subtypes for display
+  let subtype = '';
+  if (tourism === 'wilderness_hut') subtype = 'Wilderness hut';
+  else if (tourism === 'lean_to' || tags.shelter_type === 'lean_to') subtype = 'Lean-to shelter';
+  else if (tags.shelter_type === 'basic_hut') subtype = 'Basic hut';
+  else if (amenity === 'shelter') subtype = 'Shelter';
+  else if (tags.camping === 'bivouac' || tags.bivouac === 'yes') subtype = 'Bivouac';
+  else if (tags.camping === 'wild') subtype = 'Wild spot';
+  else if (tags.backcountry === 'yes') subtype = 'Backcountry';
+  else if (tags.informal === 'yes') subtype = 'Informal site';
 
   const motoFriendly = !!(
     tags.motorcycle === 'yes' || tags['access:motorcycle'] === 'yes' ||
@@ -350,6 +394,7 @@ function parseElement(el, uLat, uLng) {
   );
 
   const tagList = [];
+  if (subtype)                        tagList.push(subtype);
   if (tags.shower === 'yes')          tagList.push('Showers');
   if (tags.drinking_water === 'yes')  tagList.push('Drinking water');
   if (tags.electricity === 'yes')     tagList.push('Electric hookup');
@@ -365,7 +410,7 @@ function parseElement(el, uLat, uLng) {
 
   return {
     id: `${el.type}-${el.id}`,
-    name, type, lat, lng, motoFriendly,
+    name, type, subtype, lat, lng, motoFriendly,
     tags: tagList.slice(0, 5),
     website:      tags.website || tags['contact:website'] || null,
     phone:        tags.phone   || tags['contact:phone']   || null,
