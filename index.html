@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MotoBase — Allroad Rider Camps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root {
+    --ink:    #0f0e0c;
+    --dust:   #f0ebe0;
+    --gravel: #2a2720;
+    --amber:  #e8a020;
+    --rust:   #c04b1a;
+    --mist:   #7a7060;
+    --card:   #1c1a16;
+    --green:  #4ac068;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--ink);
+    color: var(--dust);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--gravel);
+    border-bottom: 2px solid var(--amber);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  .logo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 26px;
+    letter-spacing: 2px;
+    color: var(--amber);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo span { color: var(--dust); font-weight: 400; }
+  .tagline {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--mist);
+    display: none;
+  }
+  @media(min-width:600px){ .tagline { display: block; } }
+
+  /* ── HERO SEARCH ── */
+  .hero {
+    background: linear-gradient(160deg, #1c1a16 0%, #2a2720 60%, #1a1208 100%);
+    padding: 40px 24px 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23e8a020' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(32px, 7vw, 64px);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    line-height: 1;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .hero h1 em {
+    color: var(--amber);
+    font-style: normal;
+    display: block;
+  }
+  .hero p {
+    color: var(--mist);
+    font-size: 14px;
+    letter-spacing: 1px;
+    margin-bottom: 28px;
+    text-transform: uppercase;
+  }
+
+  /* Search box */
+  .search-wrap {
+    display: flex;
+    gap: 0;
+    max-width: 640px;
+    margin: 0 auto 12px;
+    position: relative;
+  }
+  .search-wrap input {
+    flex: 1;
+    background: var(--dust);
+    color: var(--ink);
+    border: none;
+    padding: 14px 18px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    outline: none;
+    border-radius: 4px 0 0 4px;
+  }
+  .search-wrap input::placeholder { color: var(--mist); }
+  .search-wrap button.search-btn {
+    background: var(--amber);
+    color: var(--ink);
+    border: none;
+    padding: 14px 22px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 0 4px 4px 0;
+    transition: background .2s;
+    white-space: nowrap;
+  }
+  .search-wrap button.search-btn:hover { background: #f0b030; }
+  .search-wrap button.search-btn:disabled { background: var(--mist); cursor: wait; }
+
+  /* Near me button */
+  .nearme-row {
+    max-width: 640px;
+    margin: 0 auto 16px;
+    display: flex;
+    justify-content: center;
+  }
+  .nearme-btn {
+    background: transparent;
+    border: 1px solid var(--amber);
+    color: var(--amber);
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all .15s;
+  }
+  .nearme-btn:hover { background: var(--amber); color: var(--ink); }
+  .nearme-btn:disabled { border-color: var(--mist); color: var(--mist); cursor: wait; }
+  .nearme-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .chip {
+    background: transparent;
+    border: 1px solid var(--mist);
+    color: var(--mist);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .chip:hover, .chip.active {
+    background: var(--amber);
+    border-color: var(--amber);
+    color: var(--ink);
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: calc(100vh - 60px - 230px);
+  }
+  @media(min-width: 900px) {
+    .main {
+      grid-template-columns: 420px 1fr;
+      height: calc(100vh - 60px - 230px);
+    }
+  }
+
+  /* ── LIST PANEL ── */
+  .list-panel {
+    background: var(--ink);
+    overflow-y: auto;
+    border-right: 1px solid #2a2720;
+  }
+  .panel-header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid var(--gravel);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: var(--ink);
+    z-index: 10;
+  }
+  .panel-header h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--mist);
+  }
+  .result-count {
+    font-size: 12px;
+    color: var(--amber);
+    font-weight: 600;
+  }
+
+  /* ── CAMP CARD ── */
+  .camp-card {
+    padding: 16px 20px;
+    border-bottom: 1px solid #1c1a16;
+    cursor: pointer;
+    transition: background .15s;
+    position: relative;
+  }
+  .camp-card:hover { background: #1a1810; }
+  .camp-card.selected { background: #201e18; border-left: 3px solid var(--amber); }
+  .camp-type {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+  .camp-type.campsite { background: #1a3a20; color: #4ac068; }
+  .camp-type.wild { background: #2a1a0a; color: #e8a020; }
+  .camp-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 19px;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .camp-location {
+    font-size: 12px;
+    color: var(--mist);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .camp-stars {
+    color: var(--amber);
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .camp-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .tag {
+    background: var(--gravel);
+    color: var(--mist);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: .5px;
+    font-weight: 600;
+  }
+  .camp-summary {
+    font-size: 13px;
+    color: #a09880;
+    line-height: 1.5;
+  }
+
+  /* ── RATING BREAKDOWN ── */
+  .rating-breakdown {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .rating-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .rating-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--mist);
+  }
+  .rating-bar-wrap {
+    height: 4px;
+    background: var(--gravel);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .rating-bar {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--amber);
+    transition: width .4s ease;
+  }
+  .rating-bar.low { background: var(--rust); }
+  .rating-bar.mid { background: #c8901a; }
+  .rating-bar.high { background: var(--amber); }
+  .rating-bar.top { background: var(--green); }
+
+  /* ── MAP ── */
+  #map {
+    height: 400px;
+    background: #1a1810;
+  }
+  @media(min-width:900px) {
+    #map { height: 100%; }
+  }
+
+  /* ── STATES ── */
+  .state-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 30px;
+    text-align: center;
+    gap: 12px;
+  }
+  .state-icon { font-size: 48px; }
+  .state-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .state-sub { font-size: 13px; color: var(--mist); max-width: 280px; line-height: 1.5; }
+
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--gravel);
+    border-top-color: var(--amber);
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--gravel);
+    border-top: 1px solid #3a3528;
+    padding: 16px 24px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--mist);
+    letter-spacing: 1px;
+  }
+
+  /* ── DETAIL POPUP ── */
+  .detail-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 2000;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  @media(min-width:600px) {
+    .detail-overlay { align-items: center; }
+  }
+  .detail-overlay.open { display: flex; }
+  .detail-box {
+    background: var(--card);
+    border: 1px solid var(--gravel);
+    border-radius: 8px 8px 0 0;
+    padding: 24px;
+    max-width: 560px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  @media(min-width:600px) {
+    .detail-box { border-radius: 8px; }
+  }
+  .detail-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: var(--gravel);
+    border: none;
+    color: var(--dust);
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .detail-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 28px;
+    line-height: 1;
+    margin-bottom: 16px;
+    padding-right: 40px;
+  }
+  .detail-section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gravel);
+  }
+  .detail-section h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--amber);
+    margin-bottom: 8px;
+  }
+  .detail-section p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #c0b8a8;
+  }
+  .detail-tips {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .detail-tips li {
+    font-size: 13px;
+    color: #c0b8a8;
+    padding-left: 16px;
+    position: relative;
+    line-height: 1.4;
+  }
+  .detail-tips li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--amber);
+  }
+
+  /* ── RADIUS BAR ── */
+  .radius-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--mist);
+    margin-right: 4px;
+  }
+  .radius-chip {
+    background: var(--gravel);
+    border: 1px solid #3a3528;
+    color: var(--mist);
+    padding: 4px 12px;
+    border-radius: 3px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .radius-chip:hover { border-color: var(--amber); color: var(--amber); }
+  .radius-chip.active { background: var(--amber); border-color: var(--amber); color: var(--ink); }
+
+  /* overall moto score badge in detail */
+  .moto-score-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--gravel);
+    border-radius: 4px;
+    padding: 6px 12px;
+    margin-bottom: 10px;
+  }
+  .moto-score-number {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 28px;
+    color: var(--amber);
+    line-height: 1;
+  }
+  .moto-score-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--mist);
+    line-height: 1.3;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🏍 Moto<span>Base</span></div>
+  <div class="tagline">For Allroad Riders</div>
+</header>
+
+<div class="hero">
+  <h1>Find Your <em>Basecamp</em></h1>
+  <p>On &amp; offroad · Campsites &amp; wild spots · Built for allroad riders</p>
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="Region, country or route… e.g. Black Forest, Norway" autocomplete="off">
+    <button class="search-btn" id="searchBtn" onclick="doSearch()">Find Camps</button>
+  </div>
+  <div class="nearme-row">
+    <button class="nearme-btn" id="nearmeBtn" onclick="doNearMe()">
+      <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+      Find camps near me
+    </button>
+  </div>
+  <div class="filter-row">
+    <button class="chip active" data-filter="all" onclick="setFilter(this,'all')">All spots</button>
+    <button class="chip" data-filter="campsite" onclick="setFilter(this,'campsite')">Campsites</button>
+    <button class="chip" data-filter="wild" onclick="setFilter(this,'wild')">Wild camping</button>
+    <button class="chip" data-filter="allroad" onclick="setFilter(this,'allroad')">Allroad rated ★★★★+</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="list-panel">
+    <div class="panel-header">
+      <h2>Results</h2>
+      <span class="result-count" id="resultCount">—</span>
+    </div>
+    <div id="radiusBar" style="display:none;align-items:center;gap:6px;padding:10px 20px;background:#141210;border-bottom:1px solid var(--gravel);flex-wrap:wrap;"></div>
+    <div id="listContent">
+      <div class="state-box">
+        <div class="state-icon">🗺️</div>
+        <div class="state-title">Search a region</div>
+        <div class="state-sub">Enter a country, mountain range, coastal route or hit "Find camps near me" to get started.</div>
+      </div>
+    </div>
+  </div>
+  <div id="map"></div>
+</div>
+
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail(event)">
+  <div class="detail-box" id="detailBox">
+    <button class="detail-close" onclick="closeDetailBtn()">✕</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<footer>MOTOBASE &nbsp;·&nbsp; For allroad riders · AI-powered · Data from public sources &nbsp;·&nbsp; Always verify before riding out</footer>
+
+<script>
+/* ── State ── */
+let currentFilter = 'all';
+let allCamps = [];
+let map, markers = [];
+let userLat = null, userLng = null, currentRadius = 30;
+
+/* ── Map init ── */
+function initMap() {
+  map = L.map('map', { zoomControl: true }).setView([50, 10], 4);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© CartoDB',
+    subdomains: 'abcd', maxZoom: 19
+  }).addTo(map);
+}
+initMap();
+
+/* ── Filter ── */
+function setFilter(el, filter) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter = filter;
+  renderList();
+}
+
+function filteredCamps() {
+  if (currentFilter === 'all') return allCamps;
+  if (currentFilter === 'allroad') return allCamps.filter(c => c.motoRating >= 4);
+  return allCamps.filter(c => c.type === currentFilter);
+}
+
+/* ── Near Me ── */
+function doNearMe() {
+  if (!navigator.geolocation) {
+    alert('Geolocation is not supported by your browser.');
+    return;
+  }
+  const btn = document.getElementById('nearmeBtn');
+  btn.disabled = true;
+  btn.textContent = 'Locating…';
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg> Find camps near me`;
+      const { latitude, longitude } = pos.coords;
+      userLat = latitude; userLng = longitude; currentRadius = 30;
+      document.getElementById('searchInput').value = `near coordinates ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+      map.setView([latitude, longitude], 11);
+      // Add a "you are here" marker
+      L.circleMarker([latitude, longitude], {
+        radius: 8, color: '#fff', fillColor: '#e8a020',
+        fillOpacity: 1, weight: 2
+      }).addTo(map).bindTooltip('You are here', { permanent: false });
+      doSearch(latitude, longitude, 30);
+    },
+    err => {
+      btn.disabled = false;
+      btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg> Find camps near me`;
+      alert('Could not get your location. Please allow location access or search manually.');
+    },
+    { timeout: 10000 }
+  );
+}
+
+/* ── Search ── */
+async function doSearch(lat, lng, radius) {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q && !lat) return;
+  const km = radius || 100;
+  setLoading(true, km);
+
+  const locationContext = lat
+    ? `The rider is at coordinates ${lat.toFixed(4)}, ${lng.toFixed(4)}. Find camps within ${km}km riding distance from this point. Only include spots within that radius — do not go further.`
+    : `Find camps in or near: ${q}`;
+
+  const SYSTEM = `You are a motorcycle travel expert specialising in allroad riding — riders who tackle both tarmac and dirt/gravel tracks on adventure bikes.
+Search for real, well-known motorcycle-friendly campsites AND wild camping spots suitable for allroad riders.
+Prioritise spots near gravel tracks, forest roads, mountain passes, and scenic off-road routes — not just highway campsites.
+
+The allroad rider rating (motoRating 1-5) must reflect these specific criteria:
+- Road access quality: how good are the surrounding riding roads/tracks?
+- Bike parking: is there secure, flat, covered or fenced parking for the bike?
+- Gravel/offroad access: can you reach it or explore nearby on dirt/gravel?
+- Rider facilities: power for charging gear, covered area, tool space, etc.
+- Rider community: known hangout for moto travellers, reviewed by riders?
+
+Return ONLY a valid JSON object, no markdown, no extra text:
+{
+  "region": "string",
+  "mapCenter": [lat, lng],
+  "camps": [
+    {
+      "id": "unique-slug",
+      "name": "Real place name",
+      "type": "campsite or wild",
+      "lat": number,
+      "lng": number,
+      "country": "string",
+      "area": "string",
+      "motoRating": 1-5,
+      "stars": "★★★★☆",
+      "tags": ["max 4 short tags"],
+      "summary": "2 sentences from an allroad rider perspective",
+      "whyMoto": "1-2 sentences on why allroad riders love it",
+      "ratingBreakdown": {
+        "roadAccess": 1-5,
+        "bikeParking": 1-5,
+        "gravelAccess": 1-5,
+        "riderFacilities": 1-5,
+        "riderCommunity": 1-5
+      },
+      "tips": ["2-3 practical allroad rider tips"],
+      "season": "Best months",
+      "source": "e.g. iOverlander / park4night / Google Maps"
+    }
+  ]
+}
+Return 6-10 camps. Coordinates must be accurate.`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        tools: [{ type: "web_search_20250305", name: "web_search" }],
+        system: SYSTEM,
+        messages: [{ role: "user", content: locationContext }]
+      })
+    });
+
+    const data = await response.json();
+    let jsonText = '';
+    for (const block of data.content || []) {
+      if (block.type === 'text') jsonText += block.text;
+    }
+    jsonText = jsonText.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(jsonText);
+    allCamps = result.camps || [];
+    renderAll(result.mapCenter);
+    if (lat) showRadiusBar(km);
+
+  } catch (err) {
+    console.error(err);
+    showError();
+  }
+  setLoading(false);
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+/* ── Render ── */
+function renderAll(center) {
+  renderList();
+  renderMap(center);
+}
+
+function renderList() {
+  const camps = filteredCamps();
+  document.getElementById('resultCount').textContent = `${camps.length} found`;
+  const el = document.getElementById('listContent');
+
+  if (camps.length === 0) {
+    el.innerHTML = `<div class="state-box">
+      <div class="state-icon">🏜️</div>
+      <div class="state-title">No results</div>
+      <div class="state-sub">Try adjusting the filter or search a different region.</div>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = camps.map(c => `
+    <div class="camp-card" id="card-${c.id}" onclick="selectCamp('${c.id}')">
+      <div class="camp-type ${c.type}">${c.type === 'wild' ? '🌿 Wild' : '⛺ Campsite'}</div>
+      <div class="camp-name">${c.name}</div>
+      <div class="camp-location">📍 ${c.area}, ${c.country}</div>
+      <div class="camp-stars">${c.stars} <span style="color:var(--mist);font-size:11px;margin-left:4px">Allroad ${c.motoRating}/5</span></div>
+      <div class="camp-tags">${(c.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      <div class="camp-summary">${c.summary}</div>
+    </div>
+  `).join('');
+}
+
+function renderMap(center) {
+  markers.forEach(m => m.remove());
+  markers = [];
+  if (center) map.setView(center, 7);
+
+  allCamps.forEach(c => {
+    const isWild = c.type === 'wild';
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="background:${isWild ? '#e8a020' : '#4ac068'};border:2px solid #fff;border-radius:${isWild ? '3px' : '50%'};width:14px;height:14px;box-shadow:0 2px 6px rgba(0,0,0,.5)"></div>`,
+      iconSize: [14,14], iconAnchor: [7,7]
+    });
+    const m = L.marker([c.lat, c.lng], { icon })
+      .addTo(map)
+      .bindTooltip(`<b>${c.name}</b><br>${c.stars}`, { className: 'moto-tooltip' });
+    m.on('click', () => openDetail(c));
+    markers.push(m);
+  });
+}
+
+/* ── Rating bar helpers ── */
+function barClass(v) {
+  if (v <= 1) return 'low';
+  if (v <= 2) return 'mid';
+  if (v <= 3) return 'mid';
+  if (v <= 4) return 'high';
+  return 'top';
+}
+
+function ratingBreakdownHTML(rb) {
+  if (!rb) return '';
+  const items = [
+    { label: 'Road access',       key: 'roadAccess' },
+    { label: 'Bike parking',      key: 'bikeParking' },
+    { label: 'Gravel / offroad',  key: 'gravelAccess' },
+    { label: 'Rider facilities',  key: 'riderFacilities' },
+    { label: 'Rider community',   key: 'riderCommunity' },
+  ];
+  return `<div class="rating-breakdown">
+    ${items.map(item => {
+      const v = rb[item.key] || 0;
+      const pct = (v / 5) * 100;
+      return `<div class="rating-item">
+        <div class="rating-label">${item.label}</div>
+        <div class="rating-bar-wrap">
+          <div class="rating-bar ${barClass(v)}" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+/* ── Detail popup ── */
+function openDetail(camp) {
+  const rb = camp.ratingBreakdown;
+  document.getElementById('detailContent').innerHTML = `
+    <div class="camp-type ${camp.type}" style="margin-bottom:12px">${camp.type === 'wild' ? '🌿 Wild camping' : '⛺ Campsite'}</div>
+    <div class="detail-title">${camp.name}</div>
+    <div class="camp-location" style="margin-bottom:12px">📍 ${camp.area}, ${camp.country}</div>
+
+    <div class="moto-score-badge">
+      <div class="moto-score-number">${camp.motoRating}<span style="font-size:16px;color:var(--mist)">/5</span></div>
+      <div class="moto-score-label">Allroad<br>Rating</div>
+    </div>
+    <div class="camp-stars" style="font-size:15px;margin-bottom:4px">${camp.stars}</div>
+
+    ${rb ? `<div class="detail-section">
+      <h3>Rating breakdown</h3>
+      ${ratingBreakdownHTML(rb)}
+    </div>` : ''}
+
+    <div class="camp-tags" style="margin-top:12px">${(camp.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+
+    <div class="detail-section">
+      <h3>About this spot</h3>
+      <p>${camp.summary}</p>
+    </div>
+    <div class="detail-section">
+      <h3>Why allroad riders love it</h3>
+      <p>${camp.whyMoto}</p>
+    </div>
+    <div class="detail-section">
+      <h3>Rider tips</h3>
+      <ul class="detail-tips">${(camp.tips||[]).map(t=>`<li>${t}</li>`).join('')}</ul>
+    </div>
+    <div class="detail-section" style="display:flex;gap:24px;flex-wrap:wrap">
+      <div><h3>Best season</h3><p>${camp.season}</p></div>
+      <div><h3>Source</h3><p>${camp.source}</p></div>
+    </div>
+  `;
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+/* ── Selection ── */
+let selectedId = null;
+function selectCamp(id) {
+  if (selectedId) {
+    const prev = document.getElementById(`card-${selectedId}`);
+    if (prev) prev.classList.remove('selected');
+  }
+  selectedId = id;
+  const card = document.getElementById(`card-${id}`);
+  if (card) { card.classList.add('selected'); card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+  const camp = allCamps.find(c => c.id === id);
+  if (camp) { map.flyTo([camp.lat, camp.lng], 11, { duration: 1 }); openDetail(camp); }
+}
+
+function closeDetail(e) {
+  if (e.target === document.getElementById('detailOverlay')) closeDetailBtn();
+}
+function closeDetailBtn() {
+  document.getElementById('detailOverlay').classList.remove('open');
+}
+
+/* ── UI states ── */
+function setLoading(on, radius) {
+  const btn = document.getElementById('searchBtn');
+  btn.disabled = on;
+  btn.textContent = on ? 'Searching…' : 'Find Camps';
+  if (on) {
+    const radiusMsg = radius ? `within ${radius}km of your position` : 'in your region';
+    document.getElementById('listContent').innerHTML = `
+      <div class="state-box">
+        <div class="spinner"></div>
+        <div class="state-title">Scouting routes…</div>
+        <div class="state-sub">Searching ${radiusMsg} for allroad camps and wild spots.</div>
+      </div>`;
+    document.getElementById('resultCount').textContent = '—';
+    document.getElementById('radiusBar').style.display = 'none';
+  }
+}
+
+function showRadiusBar(activeKm) {
+  const bar = document.getElementById('radiusBar');
+  bar.style.display = 'flex';
+  const steps = [30, 50, 100, 200];
+  bar.innerHTML = `
+    <span class="radius-label">Radius:</span>
+    ${steps.map(r => `
+      <button class="radius-chip ${r === activeKm ? 'active' : ''}" onclick="expandRadius(${r})">${r} km</button>
+    `).join('')}
+  `;
+}
+
+function expandRadius(km) {
+  if (!userLat) return;
+  currentRadius = km;
+  doSearch(userLat, userLng, km);
+}
+
+function showError() {
+  document.getElementById('listContent').innerHTML = `
+    <div class="state-box">
+      <div class="state-icon">⚠️</div>
+      <div class="state-title">Search failed</div>
+      <div class="state-sub">Something went wrong. Check your connection or try a different search term.</div>
+    </div>`;
+}
+</script>
+</body>
+</html>
