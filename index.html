@@ -57,6 +57,12 @@
   .nearme-btn:hover { background: var(--amber); color: var(--ink); }
   .nearme-btn:disabled { border-color: var(--mist); color: var(--mist); cursor: wait; }
 
+  .radius-hero-row { display: flex; align-items: center; gap: 8px; justify-content: center; max-width: 640px; margin: 0 auto 14px; flex-wrap: wrap; }
+  .radius-hero-label { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--mist); }
+  .radius-hero-chip { background: transparent; border: 1px solid #3a3528; color: var(--mist); padding: 6px 16px; border-radius: 3px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all .15s; }
+  .radius-hero-chip:hover { border-color: var(--amber); color: var(--amber); }
+  .radius-hero-chip.active { background: var(--amber); border-color: var(--amber); color: var(--ink); }
+
   .filter-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 640px; margin: 0 auto; }
   .chip { background: transparent; border: 1px solid var(--mist); color: var(--mist); padding: 6px 14px; border-radius: 20px; font-size: 12px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: all .15s; }
   .chip:hover, .chip.active { background: var(--amber); border-color: var(--amber); color: var(--ink); }
@@ -144,6 +150,14 @@
       Find camps near me
     </button>
   </div>
+
+  <div class="radius-hero-row">
+    <span class="radius-hero-label">Search radius:</span>
+    <button class="radius-hero-chip" id="rchip-10"  onclick="setRadius(this,10)">10 km</button>
+    <button class="radius-hero-chip active" id="rchip-25" onclick="setRadius(this,25)">25 km</button>
+    <button class="radius-hero-chip" id="rchip-50"  onclick="setRadius(this,50)">50 km</button>
+  </div>
+
   <div class="filter-row">
     <button class="chip active" data-filter="all" onclick="setFilter(this,'all')">All spots</button>
     <button class="chip" data-filter="campsite" onclick="setFilter(this,'campsite')">Campsites</button>
@@ -184,7 +198,7 @@
 let currentFilter = 'all';
 let allCamps = [];
 let markers = [], radiusCircle = null;
-let userLat = null, userLng = null, currentRadius = 30;
+let userLat = null, userLng = null, currentRadius = 25;
 let youAreHereMarker = null;
 
 /* ── Map ── */
@@ -195,6 +209,13 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
 }).addTo(motoMap);
 
 
+
+/* ── Radius selector ── */
+function setRadius(el, km) {
+  document.querySelectorAll('.radius-hero-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  currentRadius = km;
+}
 
 /* ── Filters ── */
 function setFilter(el, f) {
@@ -340,11 +361,19 @@ async function doTextSearch() {
     return;
   }
 
-  // For text search use a 50km radius around the geocoded point
+  // Use the selected radius around the geocoded point
   motoMap.setView([geo.lat, geo.lng], 10);
-  const elements = await fetchOverpass(geo.lat, geo.lng, 50);
+  const elements = await fetchOverpass(geo.lat, geo.lng, currentRadius);
   allCamps = elements.map(el => parseElement(el, null, null)).filter(Boolean);
   allCamps.sort((a,b) => a.name.localeCompare(b.name));
+
+  // Draw radius circle for context
+  if (radiusCircle) radiusCircle.remove();
+  radiusCircle = L.circle([geo.lat, geo.lng], {
+    radius: currentRadius * 1000,
+    color: '#e8a020', weight: 1, opacity: 0.4,
+    fill: true, fillColor: '#e8a020', fillOpacity: 0.04
+  }).addTo(motoMap);
 
   document.getElementById('panelTitle').textContent = q;
   renderAll([geo.lat, geo.lng], false);
@@ -366,7 +395,7 @@ function doNearMe() {
       userLng = pos.coords.longitude;
       document.getElementById('searchInput').value = '';
       document.getElementById('panelTitle').textContent = 'Near me';
-      doRadiusSearch(30);
+      doRadiusSearch(currentRadius);
     },
     () => {
       btn.disabled = false;
@@ -404,7 +433,6 @@ async function doRadiusSearch(km) {
   allCamps.sort((a, b) => (a.distKm || 0) - (b.distKm || 0));
 
   renderAll(null, true);
-  showRadiusBar(km);
   setLoading(false);
 }
 
@@ -536,20 +564,8 @@ function selectCamp(id) {
 function closeDetailOutside(e) { if (e.target === document.getElementById('detailOverlay')) closeDetail(); }
 function closeDetail() { document.getElementById('detailOverlay').classList.remove('open'); }
 
-/* ── Radius bar ── */
-function showRadiusBar(activeKm) {
-  const bar = document.getElementById('radiusBar');
-  bar.style.display = 'flex';
-  bar.innerHTML = `<span class="radius-label">Radius:</span>` +
-    [30, 50, 100, 200].map(r =>
-      `<button class="radius-chip ${r === activeKm ? 'active' : ''}" onclick="expandRadius(${r})">${r} km</button>`
-    ).join('');
-}
-function hideRadiusBar() {
-  const bar = document.getElementById('radiusBar');
-  bar.style.display = 'none';
-  bar.innerHTML = '';
-}
+/* ── (radius selector is now in the hero, no panel bar needed) ── */
+function hideRadiusBar() {} // kept for compat
 
 /* ── UI states ── */
 function setLoading(on, msg) {
