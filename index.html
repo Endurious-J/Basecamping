@@ -331,15 +331,30 @@ async function geocode(query) {
 }
 
 /* ── Overpass API ── */
-function buildOverpassQuery(lat, lng, radiusM) {
+// Split into two queries: campsites (reliable) + wild spots (lighter)
+function buildCampsiteQuery(lat, lng, radiusM) {
   const A = `(around:${radiusM},${lat},${lng})`;
-  return `[out:json][timeout:35];
+  return `[out:json][timeout:30];
 (
   node["tourism"="camp_site"]${A};
   way["tourism"="camp_site"]${A};
+  relation["tourism"="camp_site"]${A};
   node["tourism"="caravan_site"]${A};
   way["tourism"="caravan_site"]${A};
   node["amenity"="camping"]${A};
+  way["amenity"="camping"]${A};
+  node["leisure"="holiday_park"]["tents"="yes"]${A};
+  way["leisure"="holiday_park"]["tents"="yes"]${A};
+  node["leisure"="holiday_park"]["camping"="yes"]${A};
+  way["leisure"="holiday_park"]["camping"="yes"]${A};
+);
+out center tags;`;
+}
+
+function buildWildQuery(lat, lng, radiusM) {
+  const A = `(around:${radiusM},${lat},${lng})`;
+  return `[out:json][timeout:30];
+(
   node["tourism"="camp_site"]["backcountry"="yes"]${A};
   way["tourism"="camp_site"]["backcountry"="yes"]${A};
   node["tourism"="camp_site"]["wilderness"="yes"]${A};
@@ -347,27 +362,45 @@ function buildOverpassQuery(lat, lng, radiusM) {
   node["camping"="wild"]${A};
   node["camping"="bivouac"]${A};
   way["camping"="wild"]${A};
-  way["camping"="bivouac"]${A};
   node["tourism"="wilderness_hut"]${A};
   way["tourism"="wilderness_hut"]${A};
+  node["tourism"="lean_to"]${A};
   node["amenity"="shelter"]["shelter_type"="lean_to"]${A};
   node["amenity"="shelter"]["shelter_type"="basic_hut"]${A};
   node["amenity"="shelter"]["camping"="yes"]${A};
-  node["tourism"="lean_to"]${A};
   node["leisure"="picnic_site"]["camping"="yes"]${A};
-  node["overnight"="yes"]${A};
   node["bivouac"="yes"]${A};
+  node["overnight"="yes"]${A};
 );
 out center tags;`;
 }
 
-async function fetchOverpass(lat, lng, radiusKm) {
+async function runOverpass(query) {
   const res = await fetch('https://overpass-api.de/api/interpreter', {
     method: 'POST',
-    body: 'data=' + encodeURIComponent(buildOverpassQuery(lat, lng, radiusKm * 1000))
+    body: 'data=' + encodeURIComponent(query)
   });
+  if (!res.ok) throw new Error(`Overpass error: ${res.status}`);
   const data = await res.json();
+  if (data.remark) console.warn('Overpass remark:', data.remark);
   return data.elements || [];
+}
+
+async function fetchOverpass(lat, lng, radiusKm) {
+  const radiusM = radiusKm * 1000;
+  // Run both queries in parallel for speed
+  const [campsiteEls, wildEls] = await Promise.all([
+    runOverpass(buildCampsiteQuery(lat, lng, radiusM)).catch(e => { console.warn('Campsite query failed:', e); return []; }),
+    runOverpass(buildWildQuery(lat, lng, radiusM)).catch(e => { console.warn('Wild query failed:', e); return []; })
+  ]);
+  // Deduplicate by element id
+  const seen = new Set();
+  const all = [];
+  for (const el of [...campsiteEls, ...wildEls]) {
+    const key = `${el.type}-${el.id}`;
+    if (!seen.has(key)) { seen.add(key); all.push(el); }
+  }
+  return all;
 }
 
 /* ── Parse OSM element ── */
@@ -545,10 +578,14 @@ function renderList() {
   const el = document.getElementById('listContent');
 
   if (!camps.length) {
+    const allCount = allCamps.length;
     el.innerHTML = `<div class="state-box">
       <div class="state-icon">🏕️</div>
-      <div class="state-title">No camps found</div>
-      <div class="state-sub">Try a wider radius or a different area.</div>
+      <div class="state-title">${allCount > 0 ? 'No matches for filter' : 'No camps found'}</div>
+      <div class="state-sub">${allCount > 0
+        ? `${allCount} spot${allCount>1?'s':''} found but none match the active filter. Try "All spots".`
+        : 'Nothing found here in OpenStreetMap. Try a wider radius, a nearby town, or search a region name like "Veluwe" instead of a city.'
+      }</div>
     </div>`;
     return;
   }
