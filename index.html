@@ -183,18 +183,18 @@
 /* ── State ── */
 let currentFilter = 'all';
 let allCamps = [];
-let map, markers = [], radiusCircle = null;
+let markers = [], radiusCircle = null;
 let userLat = null, userLng = null, currentRadius = 30;
 let youAreHereMarker = null;
 
 /* ── Map ── */
-const map_ = L.map('map', { zoomControl: true }).setView([52, 10], 4);
+const motoMap = L.map('map', { zoomControl: true }).setView([52, 10], 4);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
   attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a> © <a href="https://carto.com">CartoDB</a>',
   subdomains: 'abcd', maxZoom: 19
-}).addTo(map_);
-// alias
-const map = map_;
+}).addTo(motoMap);
+
+
 
 /* ── Filters ── */
 function setFilter(el, f) {
@@ -341,7 +341,7 @@ async function doTextSearch() {
   }
 
   // For text search use a 50km radius around the geocoded point
-  map.setView([geo.lat, geo.lng], 10);
+  motoMap.setView([geo.lat, geo.lng], 10);
   const elements = await fetchOverpass(geo.lat, geo.lng, 50);
   allCamps = elements.map(el => parseElement(el, null, null)).filter(Boolean);
   allCamps.sort((a,b) => a.name.localeCompare(b.name));
@@ -385,11 +385,11 @@ async function doRadiusSearch(km) {
   if (youAreHereMarker) youAreHereMarker.remove();
   youAreHereMarker = L.circleMarker([userLat, userLng], {
     radius: 9, color: '#fff', fillColor: '#e8a020', fillOpacity: 1, weight: 2
-  }).addTo(map).bindTooltip('You are here', { permanent: false });
+  }).addTo(motoMap).bindTooltip('You are here', { permanent: false });
 
   // Zoom to fit radius
   const zoomForRadius = { 30: 11, 50: 10, 100: 9, 200: 8 };
-  map.setView([userLat, userLng], zoomForRadius[km] || 10);
+  motoMap.setView([userLat, userLng], zoomForRadius[km] || 10);
 
   // Draw radius circle
   if (radiusCircle) radiusCircle.remove();
@@ -397,7 +397,7 @@ async function doRadiusSearch(km) {
     radius: km * 1000,
     color: '#e8a020', weight: 1, opacity: 0.4,
     fill: true, fillColor: '#e8a020', fillOpacity: 0.04
-  }).addTo(map);
+  }).addTo(motoMap);
 
   const elements = await fetchOverpass(userLat, userLng, km);
   allCamps = elements.map(el => parseElement(el, userLat, userLng)).filter(Boolean);
@@ -460,16 +460,16 @@ function renderMarkers(center, keepView) {
       iconSize: [13,13], iconAnchor: [6,6]
     });
     const m = L.marker([c.lat, c.lng], { icon })
-      .addTo(map)
+      .addTo(motoMap)
       .bindTooltip(`<b>${c.name}</b>`, { direction: 'top' });
     m.on('click', () => openDetail(c));
     markers.push(m);
   });
 
-  if (center && !keepView) map.setView(center, 10);
+  if (center && !keepView) motoMap.setView(center, 10);
   else if (!keepView && camps.length) {
     const bounds = L.latLngBounds(camps.map(c => [c.lat, c.lng]));
-    map.fitBounds(bounds, { padding: [30, 30], maxZoom: 12 });
+    motoMap.fitBounds(bounds, { padding: [30, 30], maxZoom: 12 });
   }
 }
 
@@ -530,7 +530,7 @@ function selectCamp(id) {
   const card = document.getElementById(`card-${id}`);
   if (card) { card.classList.add('selected'); card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
   const camp = allCamps.find(c => c.id === id);
-  if (camp) { map.flyTo([camp.lat, camp.lng], 14, { duration: 1 }); openDetail(camp); }
+  if (camp) { motoMap.flyTo([camp.lat, camp.lng], 14, { duration: 1 }); openDetail(camp); }
 }
 
 function closeDetailOutside(e) { if (e.target === document.getElementById('detailOverlay')) closeDetail(); }
