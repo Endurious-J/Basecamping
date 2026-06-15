@@ -192,6 +192,30 @@
   .attr-row { display: flex; flex-direction: column; gap: 5px; }
   .attr-item { display: flex; gap: 8px; font-size: 13px; color: var(--body); }
   .attr-key { color: var(--copper); min-width: 110px; font-family: 'Barlow Condensed', sans-serif; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; padding-top: 2px; }
+
+  /* ── NAVIGATION / WAYPOINT ── */
+  .nav-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .nav-section h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--orange); margin-bottom: 10px; }
+  .nav-coords { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; margin-bottom: 10px; }
+  .nav-coords-label { font-family: 'Barlow Condensed', sans-serif; font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 2px; }
+  .nav-coords-value { font-family: monospace; font-size: 14px; color: var(--dark); font-weight: 600; }
+  .nav-btn-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .nav-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 7px 12px; border-radius: 3px; font-size: 12px;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px;
+    cursor: pointer; text-decoration: none; transition: all .15s; border: none;
+  }
+  .nav-btn.copy  { background: var(--bg); border: 1px solid var(--border); color: var(--body); }
+  .nav-btn.copy:hover  { border-color: var(--orange); color: var(--orange); }
+  .nav-btn.copy.copied { border-color: var(--green); color: var(--green); }
+  .nav-btn.gmaps { background: #4285F4; color: #fff; }
+  .nav-btn.gmaps:hover { background: #3070d0; }
+  .nav-btn.osmand { background: #EF5645; color: #fff; }
+  .nav-btn.osmand:hover { background: #d04030; }
+  .nav-btn.gpx   { background: var(--orange); color: #fff; }
+  .nav-btn.gpx:hover { background: #be5a1e; }
 </style>
 </head>
 <body>
@@ -569,6 +593,53 @@ function renderMarkers(center, keepView) {
   }
 }
 
+/* ── Coordinate helpers ── */
+function toDMS(deg, isLat) {
+  const d = Math.abs(deg), dd = Math.floor(d);
+  const mm = Math.floor((d - dd) * 60);
+  const ss = ((d - dd - mm/60) * 3600).toFixed(1);
+  const dir = isLat ? (deg >= 0 ? 'N' : 'S') : (deg >= 0 ? 'E' : 'W');
+  return `${dd}° ${mm}' ${ss}" ${dir}`;
+}
+
+function copyText(text, btnId) {
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    // Fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.getElementById(btnId);
+    if (btn) { const orig = btn.innerHTML; btn.innerHTML = '✓ Copied!'; btn.classList.add('copied'); setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000); }
+  });
+}
+
+function downloadGPX(camp) {
+  const name = camp.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="MotoBase" xmlns="http://www.topografix.com/GPX/1/1">
+  <wpt lat="${camp.lat}" lon="${camp.lng}">
+    <name>${name}</name>
+    <desc>${camp.type === 'wild' ? 'Wild camping spot' : 'Campsite'} — via MotoBase / OpenStreetMap</desc>
+    <sym>Campground</sym>
+  </wpt>
+</gpx>`;
+  const blob = new Blob([gpx], { type: 'application/gpx+xml' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${camp.name.replace(/[^a-z0-9]/gi,'_').toLowerCase()}.gpx`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 /* ── Detail ── */
 function openDetail(camp) {
   const rows = [
@@ -580,6 +651,11 @@ function openDetail(camp) {
     camp.phone       ? ['Phone',   camp.phone] : null,
     camp.email       ? ['Email',   camp.email] : null,
   ].filter(Boolean);
+
+  const decCoords  = `${camp.lat.toFixed(6)}, ${camp.lng.toFixed(6)}`;
+  const dmsCoords  = `${toDMS(camp.lat, true)},  ${toDMS(camp.lng, false)}`;
+  const gmapsUrl   = `https://www.google.com/maps/dir/?api=1&destination=${camp.lat},${camp.lng}`;
+  const osmandUrl  = `geo:${camp.lat},${camp.lng}?q=${camp.lat},${camp.lng}(${encodeURIComponent(camp.name)})`;
 
   document.getElementById('detailContent').innerHTML = `
     <span class="camp-type-badge ${camp.type}">${camp.type==='wild'?'🌿 Wild camping':'⛺ Campsite'}</span>
@@ -595,6 +671,31 @@ function openDetail(camp) {
     ${camp.website ? `<div class="detail-section"><h3>Website</h3>
       <a href="${camp.website}" target="_blank" rel="noopener" class="osm-link">Open website ↗</a>
     </div>` : ''}
+
+    <!-- NAVIGATION SECTION -->
+    <div class="nav-section">
+      <h3>📍 Navigate to this spot</h3>
+
+      <div class="nav-coords">
+        <div class="nav-coords-label">Decimal (Google Maps / phone)</div>
+        <div class="nav-coords-value">${decCoords}</div>
+      </div>
+      <div class="nav-coords">
+        <div class="nav-coords-label">DMS (Garmin / TomTom Rider)</div>
+        <div class="nav-coords-value">${dmsCoords}</div>
+      </div>
+
+      <div class="nav-btn-row">
+        <button class="nav-btn copy" id="btn-dec" onclick="copyText('${decCoords}','btn-dec')">📋 Copy decimal</button>
+        <button class="nav-btn copy" id="btn-dms" onclick="copyText('${dmsCoords}','btn-dms')">📋 Copy DMS</button>
+      </div>
+      <div class="nav-btn-row" style="margin-top:8px">
+        <a class="nav-btn gmaps" href="${gmapsUrl}" target="_blank" rel="noopener">🗺 Google Maps</a>
+        <a class="nav-btn osmand" href="${osmandUrl}">🧭 OsmAnd / Maps</a>
+        <button class="nav-btn gpx" onclick="downloadGPX(allCamps.find(c=>c.id==='${camp.id}'))">⬇ Download GPX</button>
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin-top:8px">GPX works with Garmin, TomTom Rider, Zumo, Scenic, Kurviger and most GPS devices.</p>
+    </div>
 
     <div class="detail-section"><h3>Tips for allroad riders</h3>
       <ul class="detail-tips">
