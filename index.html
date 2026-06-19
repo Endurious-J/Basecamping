@@ -216,6 +216,67 @@
   .nav-btn.osmand:hover { background: #d04030; }
   .nav-btn.gpx   { background: var(--orange); color: #fff; }
   .nav-btn.gpx:hover { background: #be5a1e; }
+
+  /* ── POI BASKET ── */
+  .poi-basket {
+    position: fixed; bottom: 24px; right: 24px; z-index: 1500;
+    background: var(--section); border: 2px solid var(--orange);
+    border-radius: 8px; padding: 14px 16px; min-width: 240px; max-width: 320px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.25);
+    display: none; flex-direction: column; gap: 10px;
+  }
+  .poi-basket.has-items { display: flex; }
+  .poi-basket-header { display: flex; align-items: center; justify-content: space-between; }
+  .poi-basket-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--orange); }
+  .poi-basket-count { background: var(--orange); color: #fff; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 13px; padding: 2px 8px; border-radius: 10px; }
+  .poi-basket-list { display: flex; flex-direction: column; gap: 4px; max-height: 160px; overflow-y: auto; }
+  .poi-basket-item { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--bg); background: rgba(255,255,255,0.07); padding: 4px 8px; border-radius: 3px; }
+  .poi-basket-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; letter-spacing: .5px; }
+  .poi-basket-remove { background: none; border: none; color: var(--copper); cursor: pointer; font-size: 14px; padding: 0 0 0 8px; line-height: 1; }
+  .poi-basket-remove:hover { color: #fff; }
+  .poi-basket-actions { display: flex; flex-direction: column; gap: 6px; }
+  .poi-export-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 8px 12px; border-radius: 3px; font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;
+    cursor: pointer; border: none; transition: all .15s; width: 100%;
+  }
+  .poi-export-btn.garmin { background: #1E5799; color: #fff; }
+  .poi-export-btn.garmin:hover { background: #174580; }
+  .poi-export-btn.tomtom { background: #C8001E; color: #fff; }
+  .poi-export-btn.tomtom:hover { background: #a80018; }
+  .poi-clear-btn { background: none; border: 1px solid rgba(239,231,219,0.2); color: var(--copper); padding: 5px; border-radius: 3px; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; text-align: center; transition: all .15s; }
+  .poi-clear-btn:hover { border-color: var(--copper); color: #fff; }
+
+  /* ── HOW TO USE BUTTON ── */
+  .howto-btn {
+    background: transparent; border: 1px solid rgba(239,231,219,0.3);
+    color: rgba(239,231,219,0.7); padding: 8px 16px; border-radius: 4px;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px;
+    text-transform: uppercase; letter-spacing: 1px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px; transition: all .15s;
+  }
+  .howto-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+  /* ── HOW TO USE MODAL ── */
+  .howto-overlay { display: none; position: fixed; inset: 0; background: rgba(26,26,26,.6); z-index: 3000; align-items: center; justify-content: center; padding: 20px; }
+  .howto-overlay.open { display: flex; }
+  .howto-box {
+    background: var(--offwhite); border: 1px solid var(--border); border-radius: 8px;
+    padding: 28px; max-width: 520px; width: 100%; max-height: 85vh; overflow-y: auto; position: relative;
+  }
+  .howto-close { position: absolute; top: 16px; right: 16px; background: var(--bg); border: 1px solid var(--border); color: var(--dark); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: background .15s; }
+  .howto-close:hover { background: var(--border); }
+  .howto-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 26px; text-transform: uppercase; letter-spacing: 2px; color: var(--dark); margin-bottom: 20px; padding-right: 40px; }
+  .howto-step { display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start; }
+  .howto-num { background: var(--orange); color: #fff; font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-size: 16px; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .howto-step-content h4 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; color: var(--dark); margin-bottom: 3px; }
+  .howto-step-content p { font-size: 13px; color: var(--body); line-height: 1.5; }
+  .howto-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .howto-device-title { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--orange); margin-bottom: 10px; }
+  .howto-device { background: var(--bg); border-radius: 4px; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); }
+  .howto-device h5 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 14px; color: var(--dark); margin-bottom: 4px; }
+  .howto-device p { font-size: 12px; color: var(--body); line-height: 1.5; }
 </style>
 </head>
 <body>
@@ -234,11 +295,12 @@
     <button class="search-btn" id="searchBtn" onclick="doTextSearch()">Find Camps</button>
   </div>
 
-  <div class="nearme-row">
+  <div class="nearme-row" style="gap:10px">
     <button class="nearme-btn" id="nearmeBtn" onclick="doNearMe()">
       <svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
       Find camps near me
     </button>
+    <button class="howto-btn" onclick="openHowTo()">? How to use</button>
   </div>
 
   <div class="radius-hero-row">
@@ -730,6 +792,11 @@ function openDetail(camp) {
         <a class="nav-btn osmand" href="${osmandUrl}">🧭 OsmAnd / Maps</a>
         <button class="nav-btn gpx" onclick="downloadGPX(allCamps.find(c=>c.id==='${camp.id}'))">⬇ Download GPX</button>
       </div>
+      <div class="nav-btn-row" style="margin-top:8px">
+        <button class="nav-btn" id="poi-btn-${camp.id}" style="background:var(--bg);border:1px solid var(--border);color:var(--body);width:100%;justify-content:center" onclick="togglePOI('${camp.id}')">
+          ${poiList.has('${camp.id}') ? '✓ Added to POI list' : '＋ Add to POI list'}
+        </button>
+      </div>
       <p style="font-size:11px;color:var(--muted);margin-top:8px">GPX works with Garmin, TomTom Rider, Zumo, Scenic, Kurviger and most GPS devices.</p>
     </div>
 
@@ -789,9 +856,196 @@ function showError(msg) {
 }
 
 document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key==='Enter') doTextSearch(); });
+
+/* ── POI Collection ── */
+const poiList = new Map(); // id -> camp object
+
+function togglePOI(id) {
+  const camp = allCamps.find(c => c.id === id);
+  if (!camp) return;
+  if (poiList.has(id)) {
+    poiList.delete(id);
+  } else {
+    poiList.set(id, camp);
+  }
+  updateBasket();
+  // Update button label in detail panel if still open
+  const btn = document.getElementById(`poi-btn-${id}`);
+  if (btn) btn.innerHTML = poiList.has(id) ? '✓ Added to POI list' : '＋ Add to POI list';
+}
+
+function updateBasket() {
+  const basket = document.getElementById('poiBasket');
+  const countEl = document.getElementById('poiCount');
+  const listEl = document.getElementById('poiList');
+  const items = Array.from(poiList.values());
+
+  countEl.textContent = items.length;
+  basket.classList.toggle('has-items', items.length > 0);
+
+  listEl.innerHTML = items.map(c => `
+    <div class="poi-basket-item">
+      <span class="poi-basket-item-name">${c.type === 'wild' ? '🌿' : '⛺'} ${c.name}</span>
+      <button class="poi-basket-remove" onclick="togglePOI('${c.id}')" title="Remove">✕</button>
+    </div>
+  `).join('');
+}
+
+function clearPOI() {
+  poiList.clear();
+  updateBasket();
+}
+
+/* ── GPX export (Garmin waypoints) ── */
+function exportGarmin() {
+  const items = Array.from(poiList.values());
+  if (!items.length) return;
+
+  const wpts = items.map(c => {
+    const name = c.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const desc = (c.type === 'wild' ? 'Wild camping' : 'Campsite') + ' — Endurious Camp Finder';
+    return `  <wpt lat="${c.lat}" lon="${c.lng}">
+    <name>${name}</name>
+    <desc>${desc}</desc>
+    <sym>Campground</sym>
+    <type>${c.type === 'wild' ? 'Wild Camping' : 'Campsite'}</type>
+  </wpt>`;
+  }).join('\n');
+
+  const gpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Endurious Camp Finder" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata>
+    <name>Endurious Camp Finder — POI List</name>
+    <desc>${items.length} camping spot${items.length>1?'s':''} selected via Endurious Camp Finder</desc>
+  </metadata>
+${wpts}
+</gpx>`;
+
+  downloadFile(gpx, 'endurious-camps.gpx', 'application/gpx+xml');
+}
+
+/* ── OV2 export (TomTom) ── */
+function exportTomTom() {
+  const items = Array.from(poiList.values());
+  if (!items.length) return;
+
+  // OV2 binary format: record type 2 = Simple POI record
+  // Format: [type(1)][size(4)][lon(4)][lat(4)][name(n)][0x00]
+  const buffers = [];
+  items.forEach(c => {
+    const name = c.name + '\0';
+    const nameBytes = new TextEncoder().encode(name);
+    const size = 1 + 4 + 4 + 4 + nameBytes.length;
+    const buf = new ArrayBuffer(size);
+    const view = new DataView(buf);
+    view.setUint8(0, 2); // Simple POI record type
+    view.setInt32(1, size, true);
+    view.setInt32(5, Math.round(c.lng * 100000), true);
+    view.setInt32(9, Math.round(c.lat * 100000), true);
+    new Uint8Array(buf).set(nameBytes, 13);
+    buffers.push(buf);
+  });
+
+  const total = buffers.reduce((s, b) => s + b.byteLength, 0);
+  const merged = new Uint8Array(total);
+  let offset = 0;
+  buffers.forEach(b => { merged.set(new Uint8Array(b), offset); offset += b.byteLength; });
+
+  downloadFile(merged, 'endurious-camps.ov2', 'application/octet-stream');
+}
+
+function downloadFile(content, filename, mime) {
+  const blob = content instanceof Uint8Array
+    ? new Blob([content], { type: mime })
+    : new Blob([content], { type: mime });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ── How To Use ── */
+function openHowTo() { document.getElementById('howtoOverlay').classList.add('open'); }
+function closeHowTo() { document.getElementById('howtoOverlay').classList.remove('open'); }
+function closeHowToOutside(e) { if (e.target === document.getElementById('howtoOverlay')) closeHowTo(); }
 </script>
 
 <footer>ENDURIOUS CAMP FINDER &nbsp;&middot;&nbsp; For allroad riders &nbsp;&middot;&nbsp; Data &copy; OpenStreetMap contributors &nbsp;&middot;&nbsp; Always verify before riding out</footer>
+
+<!-- POI BASKET -->
+<div class="poi-basket" id="poiBasket">
+  <div class="poi-basket-header">
+    <span class="poi-basket-title">📍 POI List</span>
+    <span class="poi-basket-count" id="poiCount">0</span>
+  </div>
+  <div class="poi-basket-list" id="poiList"></div>
+  <div class="poi-basket-actions">
+    <button class="poi-export-btn garmin" onclick="exportGarmin()">⬇ Download GPX — Garmin</button>
+    <button class="poi-export-btn tomtom" onclick="exportTomTom()">⬇ Download OV2 — TomTom</button>
+    <button class="poi-clear-btn" onclick="clearPOI()">Clear list</button>
+  </div>
+</div>
+
+<!-- HOW TO USE MODAL -->
+<div class="howto-overlay" id="howtoOverlay" onclick="closeHowToOutside(event)">
+  <div class="howto-box">
+    <button class="howto-close" onclick="closeHowTo()">✕</button>
+    <div class="howto-title">How to use</div>
+
+    <div class="howto-step">
+      <div class="howto-num">1</div>
+      <div class="howto-step-content">
+        <h4>Search a region</h4>
+        <p>Type a city, region or country in the search bar and hit <strong>Find Camps</strong>. Or tap <strong>Find camps near me</strong> to search around your current GPS position.</p>
+      </div>
+    </div>
+    <div class="howto-step">
+      <div class="howto-num">2</div>
+      <div class="howto-step-content">
+        <h4>Set your radius</h4>
+        <p>Choose 10, 25 or 50 km. A wider radius finds more spots but takes a moment longer to load.</p>
+      </div>
+    </div>
+    <div class="howto-step">
+      <div class="howto-num">3</div>
+      <div class="howto-step-content">
+        <h4>Filter the results</h4>
+        <p>Use the filter buttons to show all spots, campsites only, wild camping spots, or moto-friendly locations.</p>
+      </div>
+    </div>
+    <div class="howto-step">
+      <div class="howto-num">4</div>
+      <div class="howto-step-content">
+        <h4>Click a spot for details</h4>
+        <p>Tap any result in the list or any pin on the map to see details — facilities, coordinates and navigation options.</p>
+      </div>
+    </div>
+    <div class="howto-step">
+      <div class="howto-num">5</div>
+      <div class="howto-step-content">
+        <h4>Navigate or export</h4>
+        <p>Open directly in Google Maps or OsmAnd, copy the coordinates, or download a single GPX waypoint. To send multiple spots to your GPS device, use <strong>Add to POI list</strong> and download them all at once.</p>
+      </div>
+    </div>
+
+    <hr class="howto-divider">
+    <div class="howto-device-title">Sending POIs to your GPS device</div>
+
+    <div class="howto-device">
+      <h5>🗂 Garmin (Adventure / Zumo / XT)</h5>
+      <p>Download the <strong>GPX file</strong>. Connect your Garmin via USB. Copy the file to the <code>Garmin/GPX</code> folder on the device. All waypoints appear as pins on the map — tap any pin and hit Go.</p>
+    </div>
+    <div class="howto-device">
+      <h5>🗂 TomTom Rider</h5>
+      <p>Download the <strong>OV2 file</strong>. Connect your TomTom via USB. Copy the file to the <code>POI</code> folder. The spots appear as a custom POI category on your device.</p>
+    </div>
+    <div class="howto-device">
+      <h5>🗂 Other apps (Scenic, Kurviger, Maps.me)</h5>
+      <p>Use the <strong>GPX download</strong> — all these apps support GPX waypoint import via their settings or file manager.</p>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
